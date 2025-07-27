@@ -519,9 +519,10 @@ async def timeout(ctx: discord.ApplicationContext, member: discord.Member, reaso
 
 @bot.slash_command(name="delete_message", description="Delete a message by its ID.")
 @option("message_id", str, description="The ID of the message to delete")
+@option("file", description="A screenshot of the message you are deleting", input_type=discord.Attachment)
 @option("reason", str, description="Optional reason", required=False)
 @option("silent", bool, description="Whether or not to broadcast the timeout to the channel the command was executed in", required=False)
-async def delete_message(ctx: discord.ApplicationContext, message_id: str, reason: str = "No reason provided", silent: bool = True):
+async def delete_message(ctx: discord.ApplicationContext, file: discord.Attachment, message_id: str, reason: str = "No reason provided", silent: bool = True):
     author_roles = [role.id for role in ctx.author.roles]
 
     # Check permission role
@@ -566,6 +567,13 @@ async def delete_message(ctx: discord.ApplicationContext, message_id: str, reaso
             description=f"**Message ID:** `{message_id}`\n**Channel:** {target_message.channel.mention}\n**Author:** {target_message.author.mention}\n**Reason:** {reason}\n**Moderator:** {ctx.author.mention}",
             color=discord.Color.red()
         )
+
+        if not file.content_type or not file.content_type.startswith("image/"):
+            await ctx.respond("Please upload a valid image file (PNG, JPEG, etc.)", ephemeral=True)
+            return
+        else:
+            embed.set_image(url=file.url)
+
         embed.timestamp = discord.utils.utcnow()
 
         if silent:
