@@ -303,8 +303,8 @@ async def review_applicant(ctx: discord.ApplicationContext, accepted: bool, memb
 @bot.slash_command(name="ban", description="Ban a member from the server.")
 @option("member", discord.Member, description="The user to ban")
 @option("reason", str, description="Optional reason", required=False)
-#@option("silent", bool, description="Whether or not to broadcast the ban to the channel the command was executed in", required=False)
-async def ban(ctx: discord.ApplicationContext, member: discord.Member, reason: str = "No reason provided"):
+@option("silent", bool, description="Whether or not to broadcast the ban to the channel the command was executed in", required=False)
+async def ban(ctx: discord.ApplicationContext, member: discord.Member, reason: str = "No reason provided", silent: bool = True):
     await ctx.defer(ephemeral=True)
     author_roles = [role.id for role in ctx.author.roles]
 
@@ -343,6 +343,9 @@ async def ban(ctx: discord.ApplicationContext, member: discord.Member, reason: s
 
         await ctx.respond(embed=embed, ephemeral=True)
 
+        if silent is False:
+            await ctx.send(embed=embed)
+
         # Send to log channel
         log_channel = bot.get_channel(LOG_CHANNEL_ID)
         if log_channel:
@@ -358,8 +361,8 @@ async def ban(ctx: discord.ApplicationContext, member: discord.Member, reason: s
 
 @bot.slash_command(name="pardon", description="Unban a user from the server.")
 @option("member", discord.Member, description="The user to unban")
-#@option("silent", bool, description="Whether or not to broadcast the unban to the channel the command was executed in", required=False)
-async def pardon(ctx: discord.ApplicationContext, user: discord.User):
+@option("silent", bool, description="Whether or not to broadcast the unban to the channel the command was executed in", required=False)
+async def pardon(ctx: discord.ApplicationContext, user: discord.User, silent: bool = True):
     await ctx.defer(ephemeral=True)
     author_roles = [role.id for role in ctx.author.roles]
 
@@ -394,6 +397,9 @@ async def pardon(ctx: discord.ApplicationContext, user: discord.User):
 
         await ctx.respond(embed=embed, ephemeral=True)
 
+        if silent is False:
+            await ctx.send(embed=embed)
+
         # Send embed to log channel
         log_channel = bot.get_channel(LOG_CHANNEL_ID)
         if log_channel:
@@ -411,8 +417,8 @@ async def pardon(ctx: discord.ApplicationContext, user: discord.User):
 @option("member", discord.Member, description="The user to timeout")
 @option("duration", str, description="The amount of time to timeout the user. Example formatting: `10m`, `2h`, `1d`")
 @option("reason", str, description="Optional reason", required=False)
-#@option("silent", bool, description="Whether or not to broadcast the timeout to the channel the command was executed in", required=False)
-async def timeout(ctx: discord.ApplicationContext, member: discord.Member, duration: str, reason: str = "No reason provided"):
+@option("silent", bool, description="Whether or not to broadcast the timeout to the channel the command was executed in", required=False)
+async def timeout(ctx: discord.ApplicationContext, member: discord.Member, duration: str, reason: str = "No reason provided", silent: bool = True):
     await ctx.defer(ephemeral=True)
     author_roles = [role.id for role in ctx.author.roles]
 
@@ -459,6 +465,9 @@ async def timeout(ctx: discord.ApplicationContext, member: discord.Member, durat
         # Respond in command channel
         await ctx.respond(embed=embed, ephemeral=True)
 
+        if silent is False:
+            await ctx.send(embed=embed)
+
         # Send to log channel
         log_channel = bot.get_channel(LOG_CHANNEL_ID)
         if log_channel:
@@ -475,8 +484,8 @@ async def timeout(ctx: discord.ApplicationContext, member: discord.Member, durat
 @bot.slash_command(name="untimeout", description="Remove timeout from a member.")
 @option("member", discord.Member, description="The user to untimeout")
 @option("reason", str, description="Optional reason", required=False)
-#@option("silent", bool, description="Whether or not to broadcast the untimeout to the channel the command was executed in", required=False)
-async def untimeout(ctx: discord.ApplicationContext, member: discord.Member, reason: str = "No reason provided"):
+@option("silent", bool, description="Whether or not to broadcast the untimeout to the channel the command was executed in", required=False)
+async def untimeout(ctx: discord.ApplicationContext, member: discord.Member, reason: str = "No reason provided", silent: bool = True):
     await ctx.defer(ephemeral=True)
     author_roles = [role.id for role in ctx.author.roles]
 
@@ -517,6 +526,9 @@ async def untimeout(ctx: discord.ApplicationContext, member: discord.Member, rea
         # Respond in command channel
         await ctx.respond(embed=embed, ephemeral=True)
 
+        if silent is False:
+            await ctx.send(embed=embed)
+
         # Send to log channel
         log_channel = bot.get_channel(LOG_CHANNEL_ID)
         if log_channel:
@@ -533,8 +545,8 @@ async def untimeout(ctx: discord.ApplicationContext, member: discord.Member, rea
 @option("message_id", str, description="The ID of the message to delete")
 @option("file", description="A screenshot of the message you are deleting", input_type=discord.Attachment)
 @option("reason", str, description="Optional reason", required=False)
-#@option("silent", bool, description="Whether or not to broadcast the timeout to the channel the command was executed in", required=False)
-async def delete_message(ctx: discord.ApplicationContext, file: discord.Attachment, message_id: str, reason: str = "No reason provided"):
+@option("silent", bool, description="Whether or not to broadcast the timeout to the channel the command was executed in", required=False)
+async def delete_message(ctx: discord.ApplicationContext, file: discord.Attachment, message_id: str, reason: str = "No reason provided", silent: bool = True):
     await ctx.defer(ephemeral=True)
     author_roles = [role.id for role in ctx.author.roles]
 
@@ -591,6 +603,9 @@ async def delete_message(ctx: discord.ApplicationContext, file: discord.Attachme
         embed.timestamp = discord.utils.utcnow()
 
         await ctx.respond(embed=embed, ephemeral=True)
+        
+        if silent is False:
+            await ctx.send(embed=embed)
 
         # Send to log channel
         log_channel = bot.get_channel(LOG_CHANNEL_ID)
@@ -612,8 +627,8 @@ async def delete_message(ctx: discord.ApplicationContext, file: discord.Attachme
 
 @bot.slash_command(name="acrylic", description="Exclusive.")
 @option("string", str, description="Exclusive")
-#@option("silent", bool, description="Whether or not to broadcast the untimeout to the channel the command was executed in", required=False)
-async def acrylic(ctx: discord.ApplicationContext, string: str):
+@option("member", discord.Member, description="Exclusive", required=False)
+async def acrylic(ctx: discord.ApplicationContext, string: str, member: discord.Member = None):
     await ctx.defer(ephemeral=True)
     author_roles = [role.id for role in ctx.author.roles]
 
@@ -624,7 +639,10 @@ async def acrylic(ctx: discord.ApplicationContext, string: str):
 
 
     # Respond in command channel
-    await ctx.send(string)
+    if member:
+        await member.send(string)
+    else:
+        await ctx.send(string)
     await ctx.respond("Message sent.", ephemeral=True)
 
 
