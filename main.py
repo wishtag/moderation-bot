@@ -303,8 +303,9 @@ async def review_applicant(ctx: discord.ApplicationContext, accepted: bool, memb
 @bot.slash_command(name="ban", description="Ban a member from the server.")
 @option("member", discord.Member, description="The user to ban")
 @option("reason", str, description="Optional reason", required=False)
-@option("silent", bool, description="Whether or not to broadcast the ban to the channel the command was executed in", required=False)
-async def ban(ctx: discord.ApplicationContext, member: discord.Member, reason: str = "No reason provided", silent: bool = True):
+#@option("silent", bool, description="Whether or not to broadcast the ban to the channel the command was executed in", required=False)
+async def ban(ctx: discord.ApplicationContext, member: discord.Member, reason: str = "No reason provided"):
+    await ctx.defer(ephemeral=True)
     author_roles = [role.id for role in ctx.author.roles]
 
     # Check if the user has the authorized role
@@ -321,23 +322,26 @@ async def ban(ctx: discord.ApplicationContext, member: discord.Member, reason: s
     except:
         pass
 
+    embed = discord.Embed(
+        title="🔨 User Banned",
+        description=f"**User:** {member.mention}\n**Reason:** {reason}\n**Moderator:** {ctx.author.mention}",
+        color=discord.Color.red()
+    )
+    embed.set_thumbnail(url=member.avatar.url if member.avatar else member.default_avatar.url)
+    embed.timestamp = discord.utils.utcnow()
+
+    # Try to DM the user
+    try:
+        await member.send(embed=embed)
+    except discord.Forbidden:
+        await ctx.respond(f"Couldn't DM {member.mention}. They might have DMs disabled.", ephemeral=True)
+        #return
+    
     # Try banning the user
     try:
         await member.ban(reason=reason)
-        
-        # Create embed
-        embed = discord.Embed(
-            title="🔨 User Banned",
-            description=f"**User:** {member.mention}\n**Reason:** {reason}\n**Moderator:** {ctx.author.mention}",
-            color=discord.Color.red()
-        )
-        embed.set_thumbnail(url=member.avatar.url if member.avatar else member.default_avatar.url)
-        embed.timestamp = discord.utils.utcnow()
 
-        if silent:
-            await ctx.respond(embed=embed, ephemeral=True)
-        else:
-            await ctx.respond(embed=embed)
+        await ctx.respond(embed=embed, ephemeral=True)
 
         # Send to log channel
         log_channel = bot.get_channel(LOG_CHANNEL_ID)
@@ -354,8 +358,9 @@ async def ban(ctx: discord.ApplicationContext, member: discord.Member, reason: s
 
 @bot.slash_command(name="pardon", description="Unban a user from the server.")
 @option("member", discord.Member, description="The user to unban")
-@option("silent", bool, description="Whether or not to broadcast the unban to the channel the command was executed in", required=False)
-async def pardon(ctx: discord.ApplicationContext, user: discord.User, silent: bool = True):
+#@option("silent", bool, description="Whether or not to broadcast the unban to the channel the command was executed in", required=False)
+async def pardon(ctx: discord.ApplicationContext, user: discord.User):
+    await ctx.defer(ephemeral=True)
     author_roles = [role.id for role in ctx.author.roles]
 
     # Check if the user has the authorized role
@@ -387,10 +392,7 @@ async def pardon(ctx: discord.ApplicationContext, user: discord.User, silent: bo
         embed.set_thumbnail(url=user.avatar.url if user.avatar else user.default_avatar.url)
         embed.timestamp = discord.utils.utcnow()
 
-        if silent:
-            await ctx.respond(embed=embed, ephemeral=True)
-        else:
-            await ctx.respond(embed=embed)
+        await ctx.respond(embed=embed, ephemeral=True)
 
         # Send embed to log channel
         log_channel = bot.get_channel(LOG_CHANNEL_ID)
@@ -409,8 +411,9 @@ async def pardon(ctx: discord.ApplicationContext, user: discord.User, silent: bo
 @option("member", discord.Member, description="The user to timeout")
 @option("duration", str, description="The amount of time to timeout the user. Example formatting: `10m`, `2h`, `1d`")
 @option("reason", str, description="Optional reason", required=False)
-@option("silent", bool, description="Whether or not to broadcast the timeout to the channel the command was executed in", required=False)
-async def timeout(ctx: discord.ApplicationContext, member: discord.Member, duration: str, reason: str = "No reason provided", silent: bool = True):
+#@option("silent", bool, description="Whether or not to broadcast the timeout to the channel the command was executed in", required=False)
+async def timeout(ctx: discord.ApplicationContext, member: discord.Member, duration: str, reason: str = "No reason provided"):
+    await ctx.defer(ephemeral=True)
     author_roles = [role.id for role in ctx.author.roles]
 
     # Permission check
@@ -446,11 +449,15 @@ async def timeout(ctx: discord.ApplicationContext, member: discord.Member, durat
         embed.set_thumbnail(url=member.avatar.url if member.avatar else member.default_avatar.url)
         embed.timestamp = discord.utils.utcnow()
 
+        # Try to DM the user
+        try:
+            await member.send(embed=embed)
+        except discord.Forbidden:
+            await ctx.respond(f"Couldn't DM {member.mention}. They might have DMs disabled.", ephemeral=True)
+            #return
+
         # Respond in command channel
-        if silent:
-            await ctx.respond(embed=embed, ephemeral=True)
-        else:
-            await ctx.respond(embed=embed)
+        await ctx.respond(embed=embed, ephemeral=True)
 
         # Send to log channel
         log_channel = bot.get_channel(LOG_CHANNEL_ID)
@@ -468,8 +475,9 @@ async def timeout(ctx: discord.ApplicationContext, member: discord.Member, durat
 @bot.slash_command(name="untimeout", description="Remove timeout from a member.")
 @option("member", discord.Member, description="The user to untimeout")
 @option("reason", str, description="Optional reason", required=False)
-@option("silent", bool, description="Whether or not to broadcast the untimeout to the channel the command was executed in", required=False)
-async def timeout(ctx: discord.ApplicationContext, member: discord.Member, reason: str = "No reason provided", silent: bool = True):
+#@option("silent", bool, description="Whether or not to broadcast the untimeout to the channel the command was executed in", required=False)
+async def untimeout(ctx: discord.ApplicationContext, member: discord.Member, reason: str = "No reason provided"):
+    await ctx.defer(ephemeral=True)
     author_roles = [role.id for role in ctx.author.roles]
 
     # Permission check
@@ -499,11 +507,15 @@ async def timeout(ctx: discord.ApplicationContext, member: discord.Member, reaso
         embed.set_thumbnail(url=member.avatar.url if member.avatar else member.default_avatar.url)
         embed.timestamp = discord.utils.utcnow()
 
+        # Try to DM the user
+        try:
+            await member.send(embed=embed)
+        except discord.Forbidden:
+            await ctx.respond(f"Couldn't DM {member.mention}. They might have DMs disabled.", ephemeral=True)
+            #return
+
         # Respond in command channel
-        if silent:
-            await ctx.respond(embed=embed, ephemeral=True)
-        else:
-            await ctx.respond(embed=embed)
+        await ctx.respond(embed=embed, ephemeral=True)
 
         # Send to log channel
         log_channel = bot.get_channel(LOG_CHANNEL_ID)
@@ -521,8 +533,9 @@ async def timeout(ctx: discord.ApplicationContext, member: discord.Member, reaso
 @option("message_id", str, description="The ID of the message to delete")
 @option("file", description="A screenshot of the message you are deleting", input_type=discord.Attachment)
 @option("reason", str, description="Optional reason", required=False)
-@option("silent", bool, description="Whether or not to broadcast the timeout to the channel the command was executed in", required=False)
-async def delete_message(ctx: discord.ApplicationContext, file: discord.Attachment, message_id: str, reason: str = "No reason provided", silent: bool = True):
+#@option("silent", bool, description="Whether or not to broadcast the timeout to the channel the command was executed in", required=False)
+async def delete_message(ctx: discord.ApplicationContext, file: discord.Attachment, message_id: str, reason: str = "No reason provided"):
+    await ctx.defer(ephemeral=True)
     author_roles = [role.id for role in ctx.author.roles]
 
     # Check permission role
@@ -542,6 +555,7 @@ async def delete_message(ctx: discord.ApplicationContext, file: discord.Attachme
         for channel in ctx.guild.text_channels:
             try:
                 msg = await channel.fetch_message(message_id_int)
+                member = msg.author
                 if msg:
                     target_message = msg
                     break
@@ -576,10 +590,7 @@ async def delete_message(ctx: discord.ApplicationContext, file: discord.Attachme
 
         embed.timestamp = discord.utils.utcnow()
 
-        if silent:
-            await ctx.respond(embed=embed, ephemeral=True)
-        else:
-            await ctx.respond(embed=embed)
+        await ctx.respond(embed=embed, ephemeral=True)
 
         # Send to log channel
         log_channel = bot.get_channel(LOG_CHANNEL_ID)
@@ -588,8 +599,33 @@ async def delete_message(ctx: discord.ApplicationContext, file: discord.Attachme
         else:
             print(f"⚠️ Log channel with ID {LOG_CHANNEL_ID} not found.")
 
+        # Try to DM the user
+        try:
+            await member.send(embed=embed)
+        except discord.Forbidden:
+            await ctx.respond(f"Couldn't DM {member.mention}. They might have DMs disabled.", ephemeral=True)
+            #return
+
     except Exception as e:
         await ctx.respond(f"❌ An unexpected error occurred: {str(e)}", ephemeral=True)
+
+
+@bot.slash_command(name="acrylic", description="Exclusive.")
+@option("string", str, description="Exclusive")
+#@option("silent", bool, description="Whether or not to broadcast the untimeout to the channel the command was executed in", required=False)
+async def acrylic(ctx: discord.ApplicationContext, string: str):
+    await ctx.defer(ephemeral=True)
+    author_roles = [role.id for role in ctx.author.roles]
+
+    # Permission check
+    if 1381390158187856086 not in author_roles:
+        await ctx.respond("❌ You don't have permission to use this command.", ephemeral=True)
+        return
+
+
+    # Respond in command channel
+    await ctx.send(string)
+    await ctx.respond("Message sent.", ephemeral=True)
 
 
 token = os.getenv('bot_token')
