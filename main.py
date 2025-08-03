@@ -640,10 +640,13 @@ async def acrylic(ctx: discord.ApplicationContext, string: str, member: discord.
 
     # Respond in command channel
     if member:
-        await member.send(string)
+        try:
+            await member.send(string)
+        except discord.Forbidden:
+            await ctx.respond(f"Couldn't DM {member.mention}. They might have DMs disabled.", ephemeral=True)
     else:
         await ctx.send(string)
-    await ctx.respond("Message sent.", ephemeral=True)
+    await ctx.respond("Message sent if possible.", ephemeral=True)
 
 
 token = os.getenv('bot_token')
